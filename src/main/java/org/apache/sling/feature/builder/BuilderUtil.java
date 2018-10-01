@@ -16,8 +16,19 @@
  */
 package org.apache.sling.feature.builder;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Bundles;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.Configurations;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.KeyValueMap;
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -32,16 +43,6 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import javax.json.JsonWriter;
-
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Bundles;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.Configurations;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.KeyValueMap;
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 
 /**
  * Utility methods for the builders
@@ -280,10 +281,13 @@ class BuilderUtil {
                 target.getExtensions().add(ext);
             }
         }
+
         // post processing
-        for(final Extension ext : target.getExtensions()) {
+        List<Extension> extensions = new ArrayList<>(target.getExtensions());
+        extensions.add(null); // Add the 'null' extension, which is always there.
+        for(final Extension ext : extensions) {
             for(final FeatureExtensionHandler fem : context.getFeatureExtensionHandlers()) {
-                fem.postProcess(target, ext);
+                fem.postProcess(target, source, ext);
             }
         }
     }

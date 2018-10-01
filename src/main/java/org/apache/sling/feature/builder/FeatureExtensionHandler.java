@@ -52,9 +52,13 @@ public interface FeatureExtensionHandler {
      * Post process the feature with respect to the extension.
      * Post processing is invoked after all extensions have been merged.
      * This method is called regardless whether {@link #canMerge(Extension)} returned {@code true} or not.
-     * @param feature The feature
+     * @param target The target feature
+     * @param source The source feature
      * @param extension The extension
      * @throws IllegalStateException If post processing failed
      */
-    void postProcess(Feature feature, Extension extension);
+    void postProcess(Feature target, Feature source, Extension extension);
+
+    // TODO how to make this type strong? ArtifactManager is only known to io...
+    void initialize(ArtifactResolver artifactResolver);
 }

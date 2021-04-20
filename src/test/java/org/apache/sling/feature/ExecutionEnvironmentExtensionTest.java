@@ -69,6 +69,34 @@ public class ExecutionEnvironmentExtensionTest {
         assertEquals("v", eee.getFramework().getMetadata().get("p"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongFrameworkBool() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"framework\" : true }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongFrameworkInt() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"framework\" : 1 }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongFrameworkArray() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"framework\" : [] }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongFrameworkNull() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"framework\" : null }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
     @Test public void testJavaOptions() {
         final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
         e.setJSON("{ \"javaOptions\" : \"options\" }");
@@ -100,4 +128,73 @@ public class ExecutionEnvironmentExtensionTest {
 
         ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
     }
+    
+    @Test public void testNoClassPathArtifact() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{}");
+
+        assertNull(ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e).getFramework());
+    }
+
+    @Test public void testClassPathArtifactAsString() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"classpathArtifact\" : \"g:a:1\" }");
+
+        final ExecutionEnvironmentExtension eee = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+        assertNotNull(eee.getClasspathArtifact());
+        assertEquals(1,eee.getClasspathArtifact().size());
+        assertEquals(ArtifactId.parse("g:a:1"), eee.getClasspathArtifact().get(0).getId());
+    }
+
+    @Test public void testClassPathArtifactAsObject() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"classpathArtifact\" : { \"id\" : \"g:a:1\", \"p\" : \"v\" } }");
+
+        final ExecutionEnvironmentExtension eee = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+        assertNotNull(eee.getClasspathArtifact());
+        assertEquals(1,eee.getClasspathArtifact().size());
+        assertEquals(ArtifactId.parse("g:a:1"), eee.getClasspathArtifact().get(0).getId());
+        assertEquals("v", eee.getClasspathArtifact().get(0).getMetadata().get("p"));
+    }
+    
+    @Test public void testClassPathArtifactAsArray() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"classpathArtifact\" : [{ \"id\" : \"g:a:1\", \"p\" : \"v\" }, \"g:a:2\"] }");
+
+        final ExecutionEnvironmentExtension eee = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+        assertNotNull(eee.getClasspathArtifact());
+        assertEquals(2,eee.getClasspathArtifact().size());
+        assertEquals(ArtifactId.parse("g:a:1"), eee.getClasspathArtifact().get(0).getId());
+        assertEquals("v", eee.getClasspathArtifact().get(0).getMetadata().get("p"));
+        assertEquals(ArtifactId.parse("g:a:2"), eee.getClasspathArtifact().get(1).getId());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongClasspathArtifactBool() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"classpathArtifact\" : true }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongClasspathArtifactInt() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"classpathArtifact\" : 1 }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongClasspathArtifactArrayInt() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"classpathArtifact\" : [1] }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWrongClasspathArtifactNull() {
+        final Extension e = new Extension(ExtensionType.JSON, ExecutionEnvironmentExtension.EXTENSION_NAME, ExtensionState.OPTIONAL);
+        e.setJSON("{ \"framework\" : null }");
+        ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(e);
+    }
+
 }

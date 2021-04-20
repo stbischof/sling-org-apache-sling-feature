@@ -16,6 +16,10 @@
  */
 package org.apache.sling.feature;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import javax.json.JsonString;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
@@ -73,11 +77,21 @@ public class ExecutionEnvironmentExtension {
     /** Optional java options */
     private final String javaOptions;
 
+    /** Optional class-path-artifacts. */
+    private final List<Artifact> classpathArtifact;
+    
     private ExecutionEnvironmentExtension(final JsonStructure structure) {
         // get framework
         final JsonValue fwk = structure.asJsonObject().getOrDefault("framework", null);
         if ( fwk != null ) {
-            this.framework = new Artifact(fwk);
+            if (ValueType.STRING.equals(fwk.getValueType())
+                    || ValueType.OBJECT.equals(fwk.getValueType())) {
+                this.framework = new Artifact(fwk);
+            } else {
+                throw new IllegalArgumentException(
+                        "framework is not of type String or Object");
+            }
+            
         } else {
             this.framework = null;
         }
@@ -100,6 +114,33 @@ public class ExecutionEnvironmentExtension {
             this.javaOptions = ((JsonString)jo).getString();
         } else {
             this.javaOptions = null;
+        }
+
+        // get classpathArtifact
+        final JsonValue cpArt = structure.asJsonObject().getOrDefault("classpathArtifact", null);
+        if (cpArt != null) {
+            List<Artifact> tmpArtifacts = new ArrayList<>();
+            if (ValueType.ARRAY.equals(cpArt.getValueType())) {
+                cpArt.asJsonArray().forEach(jsonValue -> {
+
+                    if (ValueType.STRING.equals(jsonValue.getValueType())
+                            || ValueType.OBJECT.equals(jsonValue.getValueType())) {
+                        tmpArtifacts.add(new Artifact(jsonValue));
+                    } else {
+                        throw new IllegalArgumentException(
+                                "element of classpathArtifact is not of type String or Object");
+                    }
+                });
+            } else if (ValueType.STRING.equals(cpArt.getValueType())
+                    || ValueType.OBJECT.equals(cpArt.getValueType())) {
+                tmpArtifacts.add(new Artifact(cpArt));
+            } else {
+                throw new IllegalArgumentException(
+                        "classpathArtifact is not of type String or Object");
+            }
+            this.classpathArtifact = Collections.unmodifiableList(tmpArtifacts);
+        } else {
+            this.classpathArtifact = null;
         }
     }
 
@@ -127,5 +168,14 @@ public class ExecutionEnvironmentExtension {
      */
     public String getJavaOptions() {
         return javaOptions;
+    }
+
+    /**
+     * Get the additional classpathArtefacts
+     * @return The classpathArtefacts or {@code null}
+     * @since 1.2.24
+     */
+    public List<Artifact> getClasspathArtifact() {
+        return this.classpathArtifact;
     }
 }
